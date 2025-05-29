@@ -30,30 +30,13 @@
         top: 0;
         left: 0;
         transform-style: preserve-3d;
+        will-change: transform;
       }
       .heart,
       .falling-text {
         position: absolute;
         transform-style: preserve-3d;
       }
-
-      @keyframes moveStars {
-        0% {
-          transform: translate(0, 0);
-        }
-        100% {
-          transform: translateY(50vh) translateX(20vw);
-        }
-      }
-
-      .star {
-        position: absolute;
-        background: white;
-        border-radius: 50%;
-        opacity: 0.8;
-        animation: moveStars 10s linear infinite; /* Di chuyển liên tục */
-      }
-
       @keyframes twinkle {
         0%,
         100% {
@@ -234,7 +217,7 @@
         "Anh yêu em♡",
         "Nờ Đạt ♡ Nờ Ánh",
         "Tiểu hắc ♡ Tiểu bạch",
-        "Love you so muchmuch♡",
+        "Love you so much♡",
       ];
       function createFallingText() {
         const text = document.createElement("div");
@@ -245,7 +228,7 @@
           left: `${Math.random() * 90}vw`,
           top: `${Math.random() * -20}vh`,
           color: Math.random() > 0.5 ? "aqua" : "hotpink",
-          fontSize: `${Math.random() * 20 + 15}px`,
+          fontSize: `${Math.random() * 50 + 20}px`,
           animationDuration: `${Math.random() * 5 + 5}s`,
           transform: `translateZ(${Math.random() * 2000 - 1000}px)`,
         });
@@ -276,7 +259,11 @@
 
       function updateTransform() {
         space.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateZ(${zoom}px)`;
+        requestAnimationFrame(updateTransform); // Cập nhật liên tục, giúp xoay mượt
       }
+
+      // Gọi `requestAnimationFrame` ngay khi trang tải
+      requestAnimationFrame(updateTransform);
 
       document.addEventListener("mousedown", (e) => {
         isDragging = true;
@@ -335,8 +322,8 @@
 
       // === Initialize ===
       createStars();
-      setInterval(createHeart, 200);
-      setInterval(createFallingText, 300);
+      setInterval(createHeart, 350);
+      setInterval(createFallingText, 500);
       setInterval(createShootingStar, 3000);
     </script>
   </body>
