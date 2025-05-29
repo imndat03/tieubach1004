@@ -31,19 +31,27 @@
         left: 0;
         transform-style: preserve-3d;
       }
-
-      .star,
       .heart,
       .falling-text {
         position: absolute;
         transform-style: preserve-3d;
       }
 
+      @keyframes moveStars {
+        0% {
+          transform: translate(0, 0);
+        }
+        100% {
+          transform: translateY(50vh) translateX(20vw);
+        }
+      }
+
       .star {
+        position: absolute;
         background: white;
         border-radius: 50%;
         opacity: 0.8;
-        animation: twinkle 2s ease-in-out infinite, floatStar 8s linear infinite;
+        animation: moveStars 10s linear infinite; /* Di chuyển liên tục */
       }
 
       @keyframes twinkle {
@@ -98,17 +106,20 @@
         }
       }
 
+      @keyframes fallHeart {
+        0% {
+          transform: translateY(0) rotateY(0deg);
+        }
+        100% {
+          transform: translateY(100vh) rotateY(360deg);
+          opacity: 0;
+        }
+      }
+
       .heart {
         font-size: 20px;
         user-select: none;
-        animation: fallHeart linear forwards;
-      }
-
-      @keyframes fallHeart {
-        to {
-          transform: translateY(100vh);
-          opacity: 0;
-        }
+        animation: fallHeart 6s linear forwards;
       }
       .star {
         position: absolute;
@@ -128,14 +139,31 @@
           opacity: 1;
         }
       }
+      @keyframes colorChange {
+        0% {
+          color: hotpink;
+        }
+        25% {
+          color: aqua;
+        }
+        50% {
+          color: hotpink;
+        }
+        75% {
+          color: aqua;
+        }
+        100% {
+          color: hotpink;
+        }
+      }
 
       .falling-text {
-        font-family: Arial, sans-serif;
+        font-family: "Pacifico", cursive;
         font-weight: bold;
         white-space: nowrap;
         user-select: none;
-        text-shadow: 0 0 5px white, 0 0 10px white;
-        animation: fallText linear forwards;
+        text-shadow: 0 0 15px white, 0 0 30px #ff6ec7, 0 0 45px #ff6ec7;
+        animation: fallText linear forwards, colorChange 3s infinite alternate;
       }
 
       @keyframes fallText {
@@ -146,6 +174,18 @@
       }
     </style>
   </head>
+  <audio id="background-music" autoplay loop>
+    <source src="music.mp3" type="audio/mp3" />
+  </audio>
+  <script>
+    document.addEventListener(
+      "click",
+      function () {
+        document.getElementById("background-music").play();
+      },
+      { once: true }
+    );
+  </script>
   <body>
     <div class="scene">
       <div class="space" id="space"></div>
@@ -154,28 +194,6 @@
     <script>
       const space = document.getElementById("space");
 
-      // === Tạo ngôi sao 3D (phân bố quanh người xem) ===
-      function create3DStars(count = 500, radius = 1000) {
-        for (let i = 0; i < count; i++) {
-          const star = document.createElement("div");
-          const size = Math.random() * 2 + 1;
-          star.className = "star";
-          star.style.width = `${size}px`;
-          star.style.height = `${size}px`;
-
-          // Phân bố ngẫu nhiên trên hình cầu (dạng mặt cầu bao quanh người xem)
-          const theta = Math.random() * 2 * Math.PI;
-          const phi = Math.acos(2 * Math.random() - 1);
-          const r = radius + Math.random() * 500;
-
-          const x = r * Math.sin(phi) * Math.cos(theta);
-          const y = r * Math.sin(phi) * Math.sin(theta);
-          const z = r * Math.cos(phi);
-
-          star.style.transform = `translate3d(${x}px, ${y}px, ${z}px)`;
-          space.appendChild(star);
-        }
-      }
       // === Star Generation ===
       function createStars(count = 300) {
         for (let i = 0; i < count; i++) {
@@ -317,8 +335,8 @@
 
       // === Initialize ===
       createStars();
-      setInterval(createHeart, 300);
-      setInterval(createFallingText, 600);
+      setInterval(createHeart, 200);
+      setInterval(createFallingText, 300);
       setInterval(createShootingStar, 3000);
     </script>
   </body>
