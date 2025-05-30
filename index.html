@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
   <head>
     <meta charset="UTF-8" />
     <title>Anh Yêu Ánh ❤️</title>
@@ -15,14 +15,12 @@
         cursor: grab;
         touch-action: none;
       }
-
       .scene {
         width: 100%;
         height: 100%;
         position: relative;
         transform-style: preserve-3d;
       }
-
       .space {
         width: 100%;
         height: 100%;
@@ -33,41 +31,32 @@
         will-change: transform;
       }
       .heart,
-      .falling-text {
+      .falling-text,
+      .star {
         position: absolute;
         transform-style: preserve-3d;
+        user-select: none;
       }
-      @keyframes twinkle {
-        0%,
-        100% {
+      @keyframes sparkle {
+        0% {
           opacity: 0.3;
+          box-shadow: 0 0 5px white;
         }
         50% {
           opacity: 1;
-        }
-      }
-
-      @keyframes floatStar {
-        0% {
-          transform: translate(0, 0);
-        }
-        20% {
-          transform: translate(5px, -4px);
-        }
-        40% {
-          transform: translate(-5px, 5px);
-        }
-        60% {
-          transform: translate(4px, -5px);
-        }
-        80% {
-          transform: translate(-4px, 4px);
+          box-shadow: 0 0 15px white;
         }
         100% {
-          transform: translate(0, 0);
+          opacity: 0.3;
+          box-shadow: 0 0 5px white;
         }
       }
-
+      .star {
+        background: white;
+        border-radius: 50%;
+        opacity: 0.5;
+        animation: sparkle 1s infinite alternate;
+      }
       .shooting-star {
         width: 100px;
         height: 2px;
@@ -77,7 +66,6 @@
         transform: rotate(-45deg);
         opacity: 0.8;
       }
-
       @keyframes shooting {
         0% {
           transform: translate(100vw, -10vh) rotate(-45deg);
@@ -88,7 +76,14 @@
           opacity: 0;
         }
       }
-
+      .heart {
+        font-size: 20px;
+        font-weight: 900;
+        color: #ff2d55;
+        text-shadow: 0 0 8px #ff2d55, 0 0 15px #ff2d55, 0 0 20px #ff2d55,
+          0 0 30px #ff6ec7, 0 0 40px #ff6ec7, 0 0 50px #ff6ec7;
+        animation: fallHeart linear forwards;
+      }
       @keyframes fallHeart {
         0% {
           transform: translateY(0) rotateY(0deg);
@@ -98,120 +93,114 @@
           opacity: 0;
         }
       }
-
-      .heart {
-        font-size: 20px;
-        user-select: none;
-        animation: fallHeart 6s linear forwards;
-      }
-      .star {
-        position: absolute;
-        background: white;
-        border-radius: 50%;
-        opacity: 0.8;
-        transform-style: preserve-3d;
-        animation: twinkle 2s infinite ease-in-out;
-      }
-
-      @keyframes twinkle {
-        0%,
-        100% {
-          opacity: 0.3;
-        }
-        50% {
-          opacity: 1;
-        }
-      }
-      @keyframes colorChange {
-        0% {
-          color: hotpink;
-        }
-        25% {
-          color: aqua;
-        }
-        50% {
-          color: hotpink;
-        }
-        75% {
-          color: aqua;
-        }
-        100% {
-          color: hotpink;
-        }
-      }
-
       .falling-text {
         font-family: "Pacifico", cursive;
         font-weight: bold;
         white-space: nowrap;
-        user-select: none;
         text-shadow: 0 0 15px white, 0 0 30px #ff6ec7, 0 0 45px #ff6ec7;
         animation: fallText linear forwards, colorChange 3s infinite alternate;
       }
-
       @keyframes fallText {
         to {
           transform: translateY(100vh);
           opacity: 0;
         }
       }
+      @keyframes colorChange {
+        0%,
+        100% {
+          color: hotpink;
+        }
+        25%,
+        75% {
+          color: aqua;
+        }
+        50% {
+          color: white;
+        }
+      }
     </style>
   </head>
-  <audio id="background-music" autoplay loop>
-    <source src="music.mp3" type="audio/mp3" />
-  </audio>
-  <script>
-    document.addEventListener(
-      "click",
-      function () {
-        document.getElementById("background-music").play();
-      },
-      { once: true }
-    );
-  </script>
   <body>
+    <audio id="background-music" autoplay loop>
+      <source src="music.mp3" type="audio/mp3" />
+    </audio>
     <div class="scene">
       <div class="space" id="space"></div>
     </div>
-
     <script>
       const space = document.getElementById("space");
 
-      // === Star Generation ===
-      function createStars(count = 300) {
+      document.addEventListener(
+        "click",
+        () => {
+          document.getElementById("background-music").play();
+        },
+        { once: true }
+      );
+
+      function createElement(tag, className, styles = {}, text = "") {
+        const el = document.createElement(tag);
+        el.className = className;
+        Object.assign(el.style, styles);
+        if (text) el.textContent = text;
+        space.appendChild(el);
+        return el;
+      }
+
+      // === Dust 3D ===
+      const dustParticles = [];
+      function createDust(count = 500) {
         for (let i = 0; i < count; i++) {
-          const star = document.createElement("div");
+          const div = document.createElement("div");
+          div.className = "star";
           const size = Math.random() * 2 + 1;
-          Object.assign(star.style, {
+          Object.assign(div.style, {
             width: `${size}px`,
             height: `${size}px`,
-            top: `${Math.random() * 100}vh`,
-            left: `${Math.random() * 100}vw`,
-            transform: `translateZ(${Math.random() * 2000 - 1000}px)`,
+            position: "absolute",
           });
-          star.className = "star";
-          space.appendChild(star);
+          const p = {
+            el: div,
+            x: (Math.random() - 0.5) * window.innerWidth * 2,
+            y: (Math.random() - 0.5) * window.innerHeight * 2,
+            z: Math.random() * 2000 - 1000,
+            dx: (Math.random() - 0.5) * 3,
+            dy: (Math.random() - 0.5) * 3,
+            dz: (Math.random() - 0.5) * 3,
+          };
+          space.appendChild(div);
+          dustParticles.forEach((p) => {
+            const sparkleDuration = Math.random() * 1.5 + 0.5; // Tạo khoảng thời gian ngẫu nhiên
+            p.el.style.animation = `sparkle ${sparkleDuration}s infinite alternate`;
+          });
+          dustParticles.push(p);
         }
       }
-
-      // === Heart ===
-      function createHeart() {
-        const heart = document.createElement("div");
-        heart.className = "heart";
-        heart.textContent = "❤️";
-        Object.assign(heart.style, {
-          left: `${Math.random() * 100}vw`,
-          top: `${Math.random() * -20}vh`,
-          fontSize: `${Math.random() * 20 + 10}px`,
-          color: Math.random() > 0.5 ? "red" : "pink",
-          animationDuration: `${Math.random() * 5 + 5}s`,
-          transform: `translateZ(${Math.random() * 2000 - 1000}px)`,
-        });
-        space.appendChild(heart);
-        setTimeout(() => heart.remove(), 10000);
+      function updateDust() {
+        for (const p of dustParticles) {
+          p.x += p.dx;
+          p.y += p.dy;
+          p.z += p.dz;
+          if (
+            p.z > 1000 ||
+            p.z < -1000 ||
+            Math.abs(p.x) > 2000 ||
+            Math.abs(p.y) > 2000
+          ) {
+            p.x = (Math.random() - 0.5) * window.innerWidth * 2;
+            p.y = (Math.random() - 0.5) * window.innerHeight * 2;
+            p.z = Math.random() * 2000 - 1000;
+          }
+          p.el.style.transform = `translate3d(${p.x}px, ${p.y}px, ${p.z}px)`;
+        }
+        requestAnimationFrame(updateDust);
       }
 
-      // === Falling Text ===
+      createDust();
+      updateDust();
+
+      // === Heart & Text ===
       const messages = [
         "Yêu Ánh♡",
         "Anh yêu em♡",
@@ -219,51 +208,82 @@
         "Tiểu hắc ♡ Tiểu bạch",
         "Love you so much♡",
       ];
-      function createFallingText() {
-        const text = document.createElement("div");
-        text.className = "falling-text";
-        text.textContent =
-          messages[Math.floor(Math.random() * messages.length)];
-        Object.assign(text.style, {
-          left: `${Math.random() * 90}vw`,
-          top: `${Math.random() * -20}vh`,
-          color: Math.random() > 0.5 ? "aqua" : "hotpink",
-          fontSize: `${Math.random() * 50 + 20}px`,
-          animationDuration: `${Math.random() * 5 + 5}s`,
-          transform: `translateZ(${Math.random() * 2000 - 1000}px)`,
-        });
-        space.appendChild(text);
-        setTimeout(() => text.remove(), 10000);
+      let lastTime = 0;
+
+      function animate(timestamp) {
+        if (timestamp - lastTime > 600) {
+          createHeart();
+          createFallingText();
+          lastTime = timestamp;
+        }
+        requestAnimationFrame(animate);
       }
 
-      // === Shooting Star ===
+      function createHeart() {
+        const el = createElement(
+          "div",
+          "heart",
+          {
+            left: `${Math.random() * 100}vw`,
+            top: `${Math.random() * -20}vh`,
+            fontSize: `${Math.random() * 20 + 10}px`,
+            color: Math.random() > 0.5 ? "red" : "pink",
+            animationDuration: `${Math.random() * 5 + 5}s`,
+            transform: `translateZ(${Math.random() * 2000 - 1000}px)`,
+          },
+          "𓆩💗𓆪"
+        );
+        setTimeout(() => el.remove(), 10000);
+      }
+
+      function createFallingText() {
+        const el = createElement(
+          "div",
+          "falling-text",
+          {
+            left: `${Math.random() * 90}vw`,
+            top: `${Math.random() * -20}vh`,
+            fontSize: `${Math.random() * 50 + 20}px`,
+            animationDuration: `${Math.random() * 5 + 5}s`,
+            transform: `translateZ(${Math.random() * 2000 - 1000}px)`,
+          },
+          messages[Math.floor(Math.random() * messages.length)]
+        );
+        setTimeout(() => el.remove(), 10000);
+      }
+
+      // === Shooting star ===
       function createShootingStar() {
-        const star = document.createElement("div");
-        star.className = "shooting-star";
-        Object.assign(star.style, {
+        const el = createElement("div", "shooting-star", {
           top: "0",
           left: "100vw",
-          transform: "translate(0, 0) rotate(-45deg)",
         });
-        space.appendChild(star);
-        setTimeout(() => star.remove(), 2000);
+        setTimeout(() => el.remove(), 2000);
       }
+      setInterval(createShootingStar, 300000); // 5 phút
 
-      // === Rotation & Zoom Handling ===
+      // === Camera Control ===
       let rotateX = 0,
         rotateY = 0,
         zoom = 0;
+      let targetRotateX = 0,
+        targetRotateY = 0,
+        targetZoom = 0;
       let isDragging = false,
         lastX = 0,
         lastY = 0;
 
-      function updateTransform() {
-        space.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateZ(${zoom}px)`;
-        requestAnimationFrame(updateTransform); // Cập nhật liên tục, giúp xoay mượt
+      function lerp(start, end, t) {
+        return start + (end - start) * t;
       }
 
-      // Gọi `requestAnimationFrame` ngay khi trang tải
-      requestAnimationFrame(updateTransform);
+      function updateTransform() {
+        rotateX = lerp(rotateX, targetRotateX, 0.15);
+        rotateY = lerp(rotateY, targetRotateY, 0.15);
+        zoom = lerp(zoom, targetZoom, 0.15);
+        space.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateZ(${zoom}px)`;
+        requestAnimationFrame(updateTransform);
+      }
 
       document.addEventListener("mousedown", (e) => {
         isDragging = true;
@@ -271,32 +291,28 @@
         lastY = e.clientY;
         document.body.style.cursor = "grabbing";
       });
-
       document.addEventListener("mouseup", () => {
         isDragging = false;
         document.body.style.cursor = "grab";
       });
-
       document.addEventListener("mousemove", (e) => {
         if (!isDragging) return;
         const dx = e.clientX - lastX;
         const dy = e.clientY - lastY;
-        rotateY += dx * 0.15;
-        rotateX -= dy * 0.15;
-        rotateX = Math.max(-60, Math.min(60, rotateX));
-        rotateY = Math.max(-180, Math.min(180, rotateY));
-        updateTransform();
+        targetRotateY += dx * 0.15;
+        targetRotateX -= dy * 0.15;
+        targetRotateX = Math.max(-60, Math.min(60, targetRotateX));
+        targetRotateY = Math.max(-180, Math.min(180, targetRotateY));
         lastX = e.clientX;
         lastY = e.clientY;
       });
 
       document.addEventListener("wheel", (e) => {
-        zoom += e.deltaY * -0.5;
-        zoom = Math.max(-3000, Math.min(1000, zoom));
-        updateTransform();
+        targetZoom += e.deltaY * -0.5;
+        targetZoom = Math.max(-3000, Math.min(1000, targetZoom));
       });
 
-      // Touch support
+      // Touch control
       let touchStartX = 0,
         touchStartY = 0;
       document.addEventListener("touchstart", (e) => {
@@ -305,26 +321,21 @@
           touchStartY = e.touches[0].clientY;
         }
       });
-
       document.addEventListener("touchmove", (e) => {
         if (e.touches.length === 1) {
           const dx = e.touches[0].clientX - touchStartX;
           const dy = e.touches[0].clientY - touchStartY;
-          rotateY += dx * 0.15;
-          rotateX -= dy * 0.15;
-          rotateX = Math.max(-60, Math.min(60, rotateX));
-          rotateY = Math.max(-180, Math.min(180, rotateY));
-          updateTransform();
+          targetRotateY += dx * 0.15;
+          targetRotateX -= dy * 0.15;
+          targetRotateX = Math.max(-60, Math.min(60, targetRotateX));
+          targetRotateY = Math.max(-180, Math.min(180, targetRotateY));
           touchStartX = e.touches[0].clientX;
           touchStartY = e.touches[0].clientY;
         }
       });
 
-      // === Initialize ===
-      createStars();
-      setInterval(createHeart, 350);
-      setInterval(createFallingText, 500);
-      setInterval(createShootingStar, 3000);
+      requestAnimationFrame(updateTransform);
+      requestAnimationFrame(animate);
     </script>
   </body>
 </html>
