@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <title>Anh Yêu Ánh ❤️</title>
@@ -15,12 +15,14 @@
         cursor: grab;
         touch-action: none;
       }
+
       .scene {
         width: 100%;
         height: 100%;
         position: relative;
         transform-style: preserve-3d;
       }
+
       .space {
         width: 100%;
         height: 100%;
@@ -30,33 +32,31 @@
         transform-style: preserve-3d;
         will-change: transform;
       }
+
+      .star,
       .heart,
-      .falling-text,
-      .star {
+      .falling-text {
         position: absolute;
         transform-style: preserve-3d;
-        user-select: none;
       }
-      @keyframes sparkle {
-        0% {
-          opacity: 0.3;
-          box-shadow: 0 0 5px white;
-        }
-        50% {
-          opacity: 1;
-          box-shadow: 0 0 15px white;
-        }
-        100% {
-          opacity: 0.3;
-          box-shadow: 0 0 5px white;
-        }
-      }
+
       .star {
         background: white;
         border-radius: 50%;
-        opacity: 0.5;
-        animation: sparkle 1s infinite alternate;
+        opacity: 0.8;
+        animation: twinkle 2s infinite ease-in-out;
       }
+
+      @keyframes twinkle {
+        0%,
+        100% {
+          opacity: 0.3;
+        }
+        50% {
+          opacity: 1;
+        }
+      }
+
       .shooting-star {
         width: 100px;
         height: 2px;
@@ -66,6 +66,7 @@
         transform: rotate(-45deg);
         opacity: 0.8;
       }
+
       @keyframes shooting {
         0% {
           transform: translate(100vw, -10vh) rotate(-45deg);
@@ -76,14 +77,17 @@
           opacity: 0;
         }
       }
+
       .heart {
         font-size: 20px;
         font-weight: 900;
         color: #ff2d55;
         text-shadow: 0 0 8px #ff2d55, 0 0 15px #ff2d55, 0 0 20px #ff2d55,
-          0 0 30px #ff6ec7, 0 0 40px #ff6ec7, 0 0 50px #ff6ec7;
+          0 0 30px #ff6ec7;
         animation: fallHeart linear forwards;
+        user-select: none;
       }
+
       @keyframes fallHeart {
         0% {
           transform: translateY(0) rotateY(0deg);
@@ -93,30 +97,36 @@
           opacity: 0;
         }
       }
+
       .falling-text {
         font-family: "Pacifico", cursive;
         font-weight: bold;
         white-space: nowrap;
-        text-shadow: 0 0 15px white, 0 0 30px #ff6ec7, 0 0 45px #ff6ec7;
+        user-select: none;
+        text-shadow: 0 0 5px white, 0 0 10px white;
         animation: fallText linear forwards, colorChange 3s infinite alternate;
       }
+
+      @keyframes colorChange {
+        0%,
+        25% {
+          color: hotpink;
+        }
+        50% {
+          color: white;
+        }
+        75% {
+          color: aqua;
+        }
+        100% {
+          color: pink;
+        }
+      }
+
       @keyframes fallText {
         to {
           transform: translateY(100vh);
           opacity: 0;
-        }
-      }
-      @keyframes colorChange {
-        0%,
-        100% {
-          color: hotpink;
-        }
-        25%,
-        75% {
-          color: aqua;
-        }
-        50% {
-          color: white;
         }
       }
     </style>
@@ -128,9 +138,9 @@
     <div class="scene">
       <div class="space" id="space"></div>
     </div>
+
     <script>
       const space = document.getElementById("space");
-
       document.addEventListener(
         "click",
         () => {
@@ -138,69 +148,72 @@
         },
         { once: true }
       );
+      const stars = [];
 
-      function createElement(tag, className, styles = {}, text = "") {
-        const el = document.createElement(tag);
-        el.className = className;
-        Object.assign(el.style, styles);
-        if (text) el.textContent = text;
-        space.appendChild(el);
-        return el;
-      }
-
-      // === Dust 3D ===
-      const dustParticles = [];
-      function createDust(count = 500) {
+      function createStars(count = 600, radius = 1000) {
         for (let i = 0; i < count; i++) {
-          const div = document.createElement("div");
-          div.className = "star";
+          const star = document.createElement("div");
           const size = Math.random() * 2 + 1;
-          Object.assign(div.style, {
-            width: `${size}px`,
-            height: `${size}px`,
-            position: "absolute",
-          });
-          const p = {
-            el: div,
-            x: (Math.random() - 0.5) * window.innerWidth * 2,
-            y: (Math.random() - 0.5) * window.innerHeight * 2,
-            z: Math.random() * 2000 - 1000,
-            dx: (Math.random() - 0.5) * 3,
-            dy: (Math.random() - 0.5) * 3,
-            dz: (Math.random() - 0.5) * 3,
-          };
-          space.appendChild(div);
-          dustParticles.forEach((p) => {
-            const sparkleDuration = Math.random() * 1.5 + 0.5; // Tạo khoảng thời gian ngẫu nhiên
-            p.el.style.animation = `sparkle ${sparkleDuration}s infinite alternate`;
-          });
-          dustParticles.push(p);
+          star.className = "star";
+          star.style.width = `${size}px`;
+          star.style.height = `${size}px`;
+          star.style.animationDelay = `${Math.random() * 2}s`;
+
+          const theta = Math.random() * 2 * Math.PI;
+          const phi = Math.acos(2 * Math.random() - 1);
+          const r = radius + Math.random() * 500;
+
+          const x = r * Math.sin(phi) * Math.cos(theta);
+          const y = r * Math.sin(phi) * Math.sin(theta);
+          const z = r * Math.cos(phi);
+
+          const dx = (Math.random() - 0.5) * 0.2;
+          const dy = (Math.random() - 0.5) * 0.2;
+          const dz = (Math.random() - 0.5) * 0.2;
+
+          stars.push({ element: star, x, y, z, dx, dy, dz });
+          space.appendChild(star);
         }
       }
-      function updateDust() {
-        for (const p of dustParticles) {
-          p.x += p.dx;
-          p.y += p.dy;
-          p.z += p.dz;
+
+      function animateStars() {
+        for (const star of stars) {
+          star.x += star.dx * 5; //tốc độ ngôi sao
+          star.y += star.dy * 5;
+          star.z += star.dz * 5;
+
+          const maxDistance = 2000;
           if (
-            p.z > 1000 ||
-            p.z < -1000 ||
-            Math.abs(p.x) > 2000 ||
-            Math.abs(p.y) > 2000
+            Math.abs(star.x) > maxDistance ||
+            Math.abs(star.y) > maxDistance ||
+            Math.abs(star.z) > maxDistance
           ) {
-            p.x = (Math.random() - 0.5) * window.innerWidth * 2;
-            p.y = (Math.random() - 0.5) * window.innerHeight * 2;
-            p.z = Math.random() * 2000 - 1000;
+            star.x = -star.x;
+            star.y = -star.y;
+            star.z = -star.z;
           }
-          p.el.style.transform = `translate3d(${p.x}px, ${p.y}px, ${p.z}px)`;
+
+          star.element.style.transform = `translate3d(${star.x}px, ${star.y}px, ${star.z}px)`;
         }
-        requestAnimationFrame(updateDust);
+        requestAnimationFrame(animateStars);
       }
 
-      createDust();
-      updateDust();
+      function createHeart() {
+        const heart = document.createElement("div");
+        heart.className = "heart";
+        heart.textContent = "𓆩💗𓆪";
+        Object.assign(heart.style, {
+          left: `${Math.random() * 100}vw`,
+          top: `${Math.random() * -20}vh`,
+          fontSize: `${Math.random() * 20 + 10}px`,
+          color: Math.random() > 0.5 ? "red" : "pink",
+          animationDuration: `${Math.random() * 5 + 5}s`,
+          transform: `translateZ(${Math.random() * 2000 - 1000}px)`,
+        });
+        space.appendChild(heart);
+        setTimeout(() => heart.remove(), 10000);
+      }
 
-      // === Heart & Text ===
       const messages = [
         "Yêu Ánh♡",
         "Anh yêu em♡",
@@ -208,61 +221,33 @@
         "Tiểu hắc ♡ Tiểu bạch",
         "Love you so much♡",
       ];
-      let lastTime = 0;
-
-      function animate(timestamp) {
-        if (timestamp - lastTime > 600) {
-          createHeart();
-          createFallingText();
-          lastTime = timestamp;
-        }
-        requestAnimationFrame(animate);
-      }
-
-      function createHeart() {
-        const el = createElement(
-          "div",
-          "heart",
-          {
-            left: `${Math.random() * 100}vw`,
-            top: `${Math.random() * -20}vh`,
-            fontSize: `${Math.random() * 20 + 10}px`,
-            color: Math.random() > 0.5 ? "red" : "pink",
-            animationDuration: `${Math.random() * 5 + 5}s`,
-            transform: `translateZ(${Math.random() * 2000 - 1000}px)`,
-          },
-          "𓆩💗𓆪"
-        );
-        setTimeout(() => el.remove(), 10000);
-      }
-
       function createFallingText() {
-        const el = createElement(
-          "div",
-          "falling-text",
-          {
-            left: `${Math.random() * 90}vw`,
-            top: `${Math.random() * -20}vh`,
-            fontSize: `${Math.random() * 50 + 20}px`,
-            animationDuration: `${Math.random() * 5 + 5}s`,
-            transform: `translateZ(${Math.random() * 2000 - 1000}px)`,
-          },
-          messages[Math.floor(Math.random() * messages.length)]
-        );
-        setTimeout(() => el.remove(), 10000);
-      }
-
-      // === Shooting star ===
-      function createShootingStar() {
-        const el = createElement("div", "shooting-star", {
-          top: "0",
-          left: "100vw",
+        const text = document.createElement("div");
+        text.className = "falling-text";
+        text.textContent =
+          messages[Math.floor(Math.random() * messages.length)];
+        Object.assign(text.style, {
+          left: `${Math.random() * 90}vw`,
+          top: `${Math.random() * -20}vh`,
+          fontSize: `${Math.random() * 50 + 25}px`,
+          color: Math.random() > 0.5 ? "aqua" : "hotpink",
+          animationDuration: `${Math.random() * 5 + 5}s`,
+          transform: `translateZ(${Math.random() * 2000 - 1000}px)`,
         });
-        setTimeout(() => el.remove(), 2000);
+        space.appendChild(text);
+        setTimeout(() => text.remove(), 10000);
       }
-      setInterval(createShootingStar, 300000); // 5 phút
 
-      // === Camera Control ===
+      function createShootingStar() {
+        const star = document.createElement("div");
+        star.className = "shooting-star";
+        star.style.top = "0";
+        star.style.left = "100vw";
+        space.appendChild(star);
+        setTimeout(() => star.remove(), 2000);
+      }
+
+      // === Smooth Rotation/Zoom ===
       let rotateX = 0,
         rotateY = 0,
         zoom = 0;
@@ -273,16 +258,12 @@
         lastX = 0,
         lastY = 0;
 
-      function lerp(start, end, t) {
-        return start + (end - start) * t;
-      }
-
-      function updateTransform() {
-        rotateX = lerp(rotateX, targetRotateX, 0.15);
-        rotateY = lerp(rotateY, targetRotateY, 0.15);
-        zoom = lerp(zoom, targetZoom, 0.15);
+      function animateTransform() {
+        rotateX += (targetRotateX - rotateX) * 0.1;
+        rotateY += (targetRotateY - rotateY) * 0.1;
+        zoom += (targetZoom - zoom) * 0.1;
         space.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateZ(${zoom}px)`;
-        requestAnimationFrame(updateTransform);
+        requestAnimationFrame(animateTransform);
       }
 
       document.addEventListener("mousedown", (e) => {
@@ -291,10 +272,12 @@
         lastY = e.clientY;
         document.body.style.cursor = "grabbing";
       });
+
       document.addEventListener("mouseup", () => {
         isDragging = false;
         document.body.style.cursor = "grab";
       });
+
       document.addEventListener("mousemove", (e) => {
         if (!isDragging) return;
         const dx = e.clientX - lastX;
@@ -312,30 +295,33 @@
         targetZoom = Math.max(-3000, Math.min(1000, targetZoom));
       });
 
-      // Touch control
-      let touchStartX = 0,
-        touchStartY = 0;
       document.addEventListener("touchstart", (e) => {
         if (e.touches.length === 1) {
-          touchStartX = e.touches[0].clientX;
-          touchStartY = e.touches[0].clientY;
+          lastX = e.touches[0].clientX;
+          lastY = e.touches[0].clientY;
         }
       });
+
       document.addEventListener("touchmove", (e) => {
         if (e.touches.length === 1) {
-          const dx = e.touches[0].clientX - touchStartX;
-          const dy = e.touches[0].clientY - touchStartY;
+          const dx = e.touches[0].clientX - lastX;
+          const dy = e.touches[0].clientY - lastY;
           targetRotateY += dx * 0.15;
           targetRotateX -= dy * 0.15;
           targetRotateX = Math.max(-60, Math.min(60, targetRotateX));
           targetRotateY = Math.max(-180, Math.min(180, targetRotateY));
-          touchStartX = e.touches[0].clientX;
-          touchStartY = e.touches[0].clientY;
+          lastX = e.touches[0].clientX;
+          lastY = e.touches[0].clientY;
         }
       });
 
-      requestAnimationFrame(updateTransform);
-      requestAnimationFrame(animate);
+      // === Khởi tạo ===
+      createStars();
+      animateStars(); // Bắt đầu chuyển động sao
+      animateTransform();
+      setInterval(createHeart, 300);
+      setInterval(createFallingText, 500);
+      setInterval(createShootingStar, 3000);
     </script>
   </body>
 </html>
